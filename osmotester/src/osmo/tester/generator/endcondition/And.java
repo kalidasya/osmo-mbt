@@ -28,7 +28,7 @@ public class And extends AbstractEndCondition {
   public boolean endSuite(TestSuite suite, FSM fsm) {
     for (EndCondition condition : conditions) {
       if (!condition.endSuite(suite, fsm)) {
-        //if any return "false", the AND composition becomes false as well.
+        // if any return "false", the AND composition becomes false as well.
         return false;
       }
     }
@@ -39,7 +39,7 @@ public class And extends AbstractEndCondition {
   public boolean endTest(TestSuite suite, FSM fsm) {
     for (EndCondition condition : conditions) {
       if (!condition.endTest(suite, fsm)) {
-        //if any return "false", the AND composition becomes false as well.
+        // if any return "false", the AND composition becomes false as well.
         return false;
       }
     }
@@ -48,12 +48,15 @@ public class And extends AbstractEndCondition {
 
   @Override
   public void init(FSM fsm) {
+    for (EndCondition condition : conditions) {
+      condition.init(fsm);
+    }
   }
 
   @Override
   public String toString() {
     return "And{" +
-            "conditions=" + (conditions == null ? null : Arrays.asList(conditions)) +
-            '}';
+      "conditions=" + (conditions == null ? null : Arrays.asList(conditions)) +
+      '}';
   }
 }

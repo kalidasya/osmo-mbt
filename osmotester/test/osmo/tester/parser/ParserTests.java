@@ -78,6 +78,7 @@ public class ParserTests {
     assertTransitionPresent(fsm, "testWithGroup", 1, 0);
     assertTransitionPresent(fsm, "testWithGroup2", 2, 0);
     assertTransitionPresent(fsm, "testWithoutGroup", 1, 0);
+    assertTransitionPresent(fsm, "testWithoutGroupButAddedToGroup", 1, 0);
   }
 
   @Test
@@ -173,11 +174,9 @@ public class ParserTests {
       fail("Should throw exception");
     } catch (Exception e) {
       String msg = e.getMessage();
-      String expected = "Invalid FSM:\n" +
-              "@Transition methods are not allowed to have parameters: \"epixx()\" has 1 parameters.\n"+
-      "Invalid return type for @EndCondition (\"hello()\"):class java.lang.String. Should be boolean.\n" +
-              "@EndCondition methods are not allowed to have parameters: \"hello()\" has 1 parameters.\n";
-      assertEquals(expected, msg);
+      assertTrue(msg.contains("@Transition methods are not allowed to have parameters: \"epixx()\" has 1 parameters.\n"));
+      assertTrue(msg.contains("Invalid return type for @EndCondition (\"hello()\"):class java.lang.String. Should be boolean.\n"));
+      assertTrue(msg.contains("@EndCondition methods are not allowed to have parameters: \"hello()\" has 1 parameters.\n"));
     }
   }
 
@@ -188,12 +187,10 @@ public class ParserTests {
       fail("Should throw exception");
     } catch (Exception e) {
       String msg = e.getMessage();
-      String expected = "Invalid FSM:\n" +
-              "@Transition methods are not allowed to have parameters: \"epix()\" has 1 parameters.\n" +
-              "@Transition methods are not allowed to have parameters: \"transition1()\" has 1 parameters.\n" +
-              "Invalid return type for guard (\"listCheck()\"):class java.lang.String.\n" +
-              "Guard/Pre/Post without transition:world\n";
-      assertEquals(expected, msg);
+      assertTrue(msg.contains("@Transition methods are not allowed to have parameters: \"epix()\" has 1 parameters.\n"));
+      assertTrue(msg.contains("@Transition methods are not allowed to have parameters: \"transition1()\" has 1 parameters.\n"));
+      assertTrue(msg.contains("Invalid return type for guard (\"listCheck()\"):class java.lang.String.\n"));
+      assertTrue(msg.contains("Guard/Pre/Post without transition:world\n"));
     }
   }
 

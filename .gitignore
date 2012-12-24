@@ -4,3 +4,13 @@
 *.jar
 *.war
 *.ear
+
+# others
+lib/
+bin/
+target/
+.settings/
+.config/
+.hg/
+.classpath
+.project

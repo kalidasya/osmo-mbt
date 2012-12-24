@@ -26,6 +26,7 @@ public class TransitionParser implements AnnotationParser {
     String type = "";
     Object annotation = parameters.getAnnotation();
     String name = null;
+    String group = null;
     int weight = 0;
     if (annotation instanceof Transition) {
       Transition t = (Transition) annotation;
@@ -38,6 +39,7 @@ public class TransitionParser implements AnnotationParser {
         name = t.value();
       }
       weight = t.weight();
+      group = t.group();
       type = Transition.class.getSimpleName();
     } else {
       TestStep ts = (TestStep) annotation;
@@ -47,13 +49,14 @@ public class TransitionParser implements AnnotationParser {
         name = ts.value();
       }
       weight = ts.weight();
+      group = ts.group();
       type = TestStep.class.getSimpleName();
     }
     TransitionName tName = checkName(name, parameters);
     if (tName == null) {
       return errors;
     }
-    createTransition(parameters, tName, weight);
+    createTransition(parameters, tName, weight, group);
 
     Method method = parameters.getMethod();
     Class<?>[] parameterTypes = method.getParameterTypes();
@@ -77,9 +80,10 @@ public class TransitionParser implements AnnotationParser {
     return new TransitionName(prefix, name);
   }
 
-  private void createTransition(ParserParameters parameters, TransitionName name, int weight) {
+  private void createTransition(ParserParameters parameters, TransitionName name, int weight, String group) {
     log.debug("creating transition:" + name);
     FSMTransition transition = parameters.getFsm().createTransition(name, weight);
+    transition.setGroup(group);
     transition.setTransition(new InvocationTarget(parameters, Transition.class));
   }
 }

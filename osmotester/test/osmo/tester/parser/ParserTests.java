@@ -1,5 +1,9 @@
 package osmo.tester.parser;
 
+import osmo.tester.testmodels.TestGroupModelBuggy;
+
+import osmo.tester.testmodels.TestGroupModel;
+
 import org.junit.Before;
 import org.junit.Test;
 import osmo.tester.OSMOConfiguration;
@@ -67,6 +71,24 @@ public class ParserTests {
     assertNotNull("Should have Requirements set", fsm.getRequirements());
   }
 
+  @Test
+  public void testGroupModel1(){
+    TestGroupModel model = new TestGroupModel();
+    FSM fsm = parser.parse(conf(model));
+    assertTransitionPresent(fsm, "testWithGroup", 1, 0);
+    assertTransitionPresent(fsm, "testWithGroup2", 2, 0);
+    assertTransitionPresent(fsm, "testWithoutGroup", 1, 0);
+  }
+
+  @Test
+  public void testGroupModelBuggy(){
+    TestGroupModelBuggy model = new TestGroupModelBuggy();
+    FSM fsm = parser.parse(conf(model));
+    assertTransitionPresent(fsm, "groupName", 1, 0);
+    assertTransitionPresent(fsm, "testWithGroup", 0, 0);
+    assertTransitionPresent(fsm, "testWithGroup2", 1, 0);
+    assertTransitionPresent(fsm, "testWithoutGroup", 1, 0);
+  }
 
   @Test
   public void testModel2() {

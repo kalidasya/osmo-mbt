@@ -1,5 +1,11 @@
 package osmo.tester.model;
 
+import osmo.tester.annotation.Guard;
+
+import org.apache.commons.collections.PredicateUtils;
+
+import org.apache.commons.collections.CollectionUtils;
+
 import osmo.common.log.Logger;
 import osmo.tester.OSMOConfiguration;
 import osmo.tester.generator.Observer;
@@ -14,6 +20,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Represents the given model object in terms of a finite state machine (FSM).
@@ -76,29 +83,45 @@ public class FSM {
     return suite;
   }
 
-    /**
-    * Returns an existing object for the requested transition name or creates a new one if one was not previously
-    * found existing.
-    *
-    * @param name   The name of the transition. Taken from @Transition("name").
-    * @param weight The weight of the transition. Taken from @Transition(weight=x).
-    * @return A transition object for the requested name.
-    */
+  /**
+  * Returns an existing object for the requested transition name or creates a new one if one was not previously
+  * found existing.
+  *
+  * @param name   The name of the transition. Taken from @Transition("name").
+  * @param weight The weight of the transition. Taken from @Transition(weight=x).
+  * @return A transition object for the requested name.
+  */
   public FSMTransition createTransition(TransitionName name, int weight) {
     log.debug("Creating transition: " + name + " weight:" + weight);
     FSMTransition transition = transitions.get(name);
     if (transition != null) {
-      //we can come here from guard, post, or transition creation. however, only transitions define weights
-      //so we have to set it here if it was previously not defined
-      //note that transition.setWeight will do nothing in case of negative value as in guards and oracles
+      // we can come here from guard, post, or transition creation. however, only transitions define weights
+      // so we have to set it here if it was previously not defined
+      // note that transition.setWeight will do nothing in case of negative value as in guards and oracles
       transition.setWeight(weight);
       return transition;
     }
+    /*
+     * transition = findTransitionByGroup(name);
+     * if (transition != null) {
+     * transition.setWeight(weight);
+     * return transition;
+     * }
+     */
     transition = new FSMTransition(name);
     transition.setWeight(weight);
     transitions.put(name, transition);
     log.debug("Transition created");
     return transition;
+  }
+
+  private FSMTransition findTransitionByGroup(TransitionName name) {
+    for (Entry<TransitionName, FSMTransition> transition : transitions.entrySet()) {
+      if (name.nameEquals(transition.getValue().getGroup())) {
+        return transition.getValue();
+      }
+    }
+    return null;
   }
 
   /**
@@ -114,12 +137,12 @@ public class FSM {
     log.debug("Checking FSM validity");
     if (requirements == null) {
       log.debug("No requirements object defined. Creating new.");
-      //user the setRequirements method to also initialize the requirements object missing state
+      // user the setRequirements method to also initialize the requirements object missing state
       setRequirements(new Requirements());
     }
     if (suite == null) {
       log.debug("No suite object defined. Creating new.");
-      //user the setSuite method to also initialize the suite object missing state
+      // user the setSuite method to also initialize the suite object missing state
       setSuite(new TestSuite());
     }
     if (transitions.size() == 0) {
@@ -130,11 +153,21 @@ public class FSM {
       TransitionName name = transition.getName();
       log.debug("Checking transition:" + name);
       if (target == null) {
-        errors += "Guard/Pre/Post without transition:" + name + "\n";
-        log.debug("Error: Found guard/pre/post without a matching transition - " + name);
+        Collection<FSMTransition> matchingTrans = CollectionUtils.select(transitions.values(), new TransitionGroupNamePredicate(name));
+        if (matchingTrans.size() == 0) {
+          errors += "Guard/Pre/Post without transition:" + name + "\n";
+          log.debug("Error: Found guard/pre/post without a matching transition - " + name);
+        } else {
+          for (FSMTransition fsmTransition : matchingTrans) {
+            fsmTransition.addGuards(transition.getGuards());
+            fsmTransition.sort();
+          }
+          transitions.remove(transition);
+        }
+      } else {
+        transition.sort();
+        errors = addGenericElements(transition, errors);
       }
-      transition.sort();
-      errors = addGenericElements(transition, errors);
     }
     errors = addNegatedElements(errors);
     if (errors.length() > 0) {
@@ -152,7 +185,7 @@ public class FSM {
    * @return The error msg string given with possible new errors appended.
    */
   private String addGenericElements(FSMTransition transition, String errors) {
-    //we add all generic guards to the set of guards for this transition. doing it here includes them in the checks
+    // we add all generic guards to the set of guards for this transition. doing it here includes them in the checks
     for (InvocationTarget guard : genericGuards) {
       transition.addGuard(guard);
     }
@@ -164,19 +197,19 @@ public class FSM {
     }
     return errors;
   }
-  
+
   private String addNegatedElements(String errors) {
     for (NegatedGuard ng : negatedGuards) {
       int count = 0;
       for (TransitionName transitionName : transitions.keySet()) {
         if (transitionName.shouldNegationApply(ng.getName())) {
-          log.debug("Negation '"+ng.getName()+"' applies to :"+transitionName);
+          log.debug("Negation '" + ng.getName() + "' applies to :" + transitionName);
           transitions.get(transitionName).addGuard(ng.getTarget());
           count++;
         }
       }
       if (count == 0) {
-        errors += "Negation without matching transition to negate for:"+ng.getName();
+        errors += "Negation without matching transition to negate for:" + ng.getName();
       }
     }
     return errors;
@@ -376,7 +409,7 @@ public class FSM {
    */
   public TestSuite initSearchableInputs(OSMOConfiguration config) {
     this.scripter = config.getScripter();
-    //initial capture to allow FSM to have names, etc. for algorithm initialization
+    // initial capture to allow FSM to have names, etc. for algorithm initialization
     captureSearchableInputs();
 
     if (scripter != null) {

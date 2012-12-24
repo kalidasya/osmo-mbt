@@ -41,13 +41,13 @@ public class GuardParser implements AnnotationParser {
       FSM fsm = parameters.getFsm();
       InvocationTarget target = new InvocationTarget(parameters, Guard.class);
       if (givenName.equals("all")) {
-        //generic guards should not have their own transition or it will fail the FSM check since it is a guard
-        //without a transition
+        // generic guards should not have their own transition or it will fail the FSM check since it is a guard
+        // without a transition
         fsm.addGenericGuard(target);
-        //it should also have no other associations defined, as they should be already part of it all
+        // it should also have no other associations defined, as they should be already part of it all
         if (transitionNames.length > 1) {
           errors += "A guard that is associated with 'all' transitions should not have any other associations defined. ";
-          errors += "One had "+ Arrays.asList(transitionNames)+" as a list of associations.";
+          errors += "One had " + Arrays.asList(transitionNames) + " as a list of associations.";
         }
         return errors;
       }

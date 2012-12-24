@@ -13,7 +13,7 @@ public class TransitionName {
     this.prefix = prefix;
     this.name = name;
   }
-  
+
   public int length() {
     return toString().length();
   }
@@ -49,5 +49,9 @@ public class TransitionName {
       return false;
     }
     return !negationName.name.equals(name);
+  }
+
+  public boolean nameEquals(String name){
+    return this.name.equals(name);
   }
 }

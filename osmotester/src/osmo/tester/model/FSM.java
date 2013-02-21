@@ -347,7 +347,18 @@ public class FSM {
    * @param var The variable field itself.
    */
   public void addVariable(VariableField var) {
-    stateVariables.add(var);
+    if (!checkIfExists(var)) {
+      stateVariables.add(var);
+    }
+  }
+
+  private boolean checkIfExists(VariableField var) {
+    for (VariableField stateVar : stateVariables) {
+      if (stateVar.isSameVariable(var)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**

@@ -81,6 +81,10 @@ public class VariableField {
     }
   }
 
+  public boolean isSameVariable(VariableField var){
+    return variable.equals(var.variable);
+  }
+
   @Override
   public String toString() {
     return "VariableField{" +

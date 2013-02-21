@@ -1,5 +1,6 @@
 package osmo.tester.reporting.coverage;
 
+import com.google.common.collect.ImmutableSet;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import osmo.tester.generator.testsuite.TestCase;
@@ -47,7 +48,7 @@ public abstract class CoverageMetric {
 
   /**
    * Count the number of times a transition has been covered.
-   * 
+   *
    * @return Key = transition, Value = number of times covered.
    */
   protected Map<FSMTransition, Integer> countTransitions() {
@@ -67,7 +68,7 @@ public abstract class CoverageMetric {
    * A transition pair is A->B, meaning that transition B was taken after A.
    * If the number of times taken is 0, the value 0 is given for that pair.
    * Thus, each pair should be represented in the result(s).
-   * 
+   *
    * @return List defining how often each pair has been taken so far.
    */
   protected List<TransitionPairCount> countTransitionPairs() {
@@ -110,7 +111,7 @@ public abstract class CoverageMetric {
    * Counts the number of times each requirement has been covered.
    * If the requirement has not been covered at all, value of 0 is inserted.
    * Thus, all requirements should be listed in the results.
-   * 
+   *
    * @return The coverage count for each requirement.
    */
   protected List<RequirementCount> countRequirements() {
@@ -208,7 +209,7 @@ public abstract class CoverageMetric {
   /**
    * Creates a traceability matrix based on the given Velocity template.
    * The matrix shows how many times each test case has covered the different coverage measure.
-   * 
+   *
    * @param templateName The name of the Velocity template to user for the report.
    * @return The formatted traceability matrix.
    */
@@ -220,8 +221,7 @@ public abstract class CoverageMetric {
     Collections.sort(pairs);
     List<String> requirements = getRequirements();
     Collections.sort(requirements);
-    List<String> variables = getVariables();
-    Collections.sort(variables);
+    List<String> variables = ImmutableSet.copyOf(getVariables()).asList();
 
     vc.put("alt", new CSSHelper());
     vc.put("tests", tc);
@@ -246,7 +246,7 @@ public abstract class CoverageMetric {
 
   /**
    * Provides a list of all transitions in the active model objects.
-   * 
+   *
    * @return The transition names.
    */
   private List<String> getTransitions() {
@@ -260,7 +260,7 @@ public abstract class CoverageMetric {
 
   /**
    * Provides a list of transition pairs.
-   * 
+   *
    * @return The pair names, with transitions separated by "->".
    */
   private List<String> getTransitionPairs() {
@@ -276,7 +276,7 @@ public abstract class CoverageMetric {
 
   /**
    * Get the list of requirements defined in the model.
-   * 
+   *
    * @return The requirement names.
    */
   private List<String> getRequirements() {
@@ -292,7 +292,7 @@ public abstract class CoverageMetric {
   /**
    * Gives a list of all model variables. Include those tagged as @Variable
    * and those with type of {@link SearchableInput}
-   * 
+   *
    * @return The variable names.
    */
   private List<String> getVariables() {
